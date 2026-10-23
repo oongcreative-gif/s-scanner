@@ -23,7 +23,7 @@ body{
   font:15px/1.5 "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   font-variant-numeric:tabular-nums;
 }
-.wrap{max-width:1120px; margin:0 auto; padding:0 16px}
+.wrap{max-width:1480px; margin:0 auto; padding:0 16px}
 header{padding:22px 0 14px}
 .brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
 h1{margin:0; font-size:22px; font-weight:750; letter-spacing:-.02em}
@@ -33,7 +33,8 @@ h1{margin:0; font-size:22px; font-weight:750; letter-spacing:-.02em}
 .stamp{margin-left:auto; color:var(--sub); font-size:13px; text-align:right}
 .stamp b{color:var(--ink); font-weight:650}
 
-.chartbox{background:var(--panel); border:1px solid var(--rule); padding:14px 16px 10px}
+.layout{display:grid; grid-template-columns:minmax(0,1fr) 430px; gap:14px; height:calc(100vh - 118px); min-height:560px; margin-bottom:16px}
+.chartbox{background:var(--panel); border:1px solid var(--rule); padding:14px 16px 10px; display:flex; flex-direction:column; min-height:0; min-width:0}
 .ch-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
 .ch-head h2{margin:0; font-size:18px; letter-spacing:-.01em}
 .ch-meta{color:var(--sub); font-size:13px}
@@ -43,36 +44,39 @@ h1{margin:0; font-size:22px; font-weight:750; letter-spacing:-.02em}
 .seg button + button{border-left:1px solid var(--rule)}
 .seg button[aria-pressed="true"]{background:var(--mark); color:#fff; font-weight:650}
 .seg button:focus-visible{outline:2px solid var(--mark); outline-offset:-2px}
-#chart{height:460px; margin-top:10px}
+#chart{flex:1; min-height:240px; margin-top:10px}
 .view{margin-top:6px; color:var(--sub); font-size:12.5px}
 .key{display:flex; gap:16px; flex-wrap:wrap; color:var(--sub); font-size:12.5px; margin-top:6px}
 .key i{display:inline-block; width:14px; height:3px; margin-right:6px; vertical-align:middle; background:var(--env)}
 
-.log{margin:18px 0 40px; background:var(--panel); border:1px solid var(--rule)}
-.log-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid var(--rule); flex-wrap:wrap}
+.log{background:var(--panel); border:1px solid var(--rule); display:flex; flex-direction:column; min-height:0; min-width:0}
+.log-head{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; flex:none; border-bottom:1px solid var(--rule); flex-wrap:wrap}
 .log h2{margin:0; font-size:14px; font-weight:700}
 .tools{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
 .tools label{font-size:13px; color:var(--sub); display:inline-flex; align-items:center; gap:6px; cursor:pointer}
 .tools input[type=search]{
-  width:170px; max-width:100%; padding:7px 10px; border:1px solid var(--rule); border-radius:4px;
+  width:130px; max-width:100%; padding:7px 10px; border:1px solid var(--rule); border-radius:4px;
   background:var(--paper); color:var(--ink); font:inherit; font-size:14px;
 }
 .tools input:focus-visible{outline:2px solid var(--mark); outline-offset:1px}
-.scroll{overflow-x:auto}
-table{width:100%; border-collapse:collapse; min-width:520px}
-th, td{padding:10px 16px; text-align:left; border-bottom:1px solid var(--rule); font-size:14px; white-space:nowrap}
-th{color:var(--sub); font-weight:600; font-size:12.5px; background:var(--panel)}
+.scroll{flex:1; min-height:0; overflow-y:auto; overflow-x:hidden}
+table{width:100%; border-collapse:collapse}
+th, td{padding:8px 10px; text-align:left; border-bottom:1px solid var(--rule); font-size:14px; white-space:nowrap}
+th{color:var(--sub); font-weight:600; font-size:12.5px; background:var(--panel); position:sticky; top:0; z-index:1; box-shadow:0 1px 0 var(--rule)}
+td.nm small{display:block; margin:1px 0 0}
 tbody tr{cursor:pointer}
 tbody tr:hover{background:var(--hover)}
 tbody tr[aria-selected="true"]{box-shadow:inset 3px 0 0 var(--mark); background:var(--hover)}
 tbody tr.near{background:var(--near)}
 td.num, th.num{text-align:right}
-td small{color:var(--sub); font-size:12px; margin-left:6px}
+td small{color:var(--sub); font-size:12px}
 .up{color:var(--up)} .down{color:var(--down)}
 .tag{display:inline-block; padding:0 7px; margin-left:6px; border-radius:3px; font-size:11.5px; border:1px solid var(--mark); color:var(--mark)}
 .empty{padding:18px 16px; color:var(--sub); font-size:14px; margin:0}
-@media (max-width:860px){
-  #chart{height:340px}
+@media (max-width:980px){
+  .layout{grid-template-columns:1fr; height:auto}
+  .chartbox{height:420px}
+  .log{height:560px}
   .stamp{margin-left:0; text-align:left; width:100%}
 }
 </style>
@@ -88,7 +92,7 @@ td small{color:var(--sub); font-size:12px; margin-left:6px}
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap layout">
   <section class="chartbox" aria-label="차트">
     <div class="ch-head"><h2 id="chTitle">차트</h2><span class="ch-meta" id="chMeta"></span></div>
     <div class="ch-tools">
@@ -111,12 +115,12 @@ td small{color:var(--sub); font-size:12px; margin-left:6px}
           <button type="button" data-s="gap" aria-pressed="false">하단 근접순</button>
         </div>
         <label><input type="checkbox" id="onlyNear"> 10% 이내만</label>
-        <input id="q" type="search" placeholder="종목명 또는 코드" aria-label="종목 검색">
+        <input id="q" type="search" placeholder="종목 검색" aria-label="종목 검색">
       </div>
     </div>
     <div class="scroll">
       <table>
-        <thead><tr><th>순위</th><th>종목명</th><th class="num">당일 등락률</th><th class="num">하단까지</th></tr></thead>
+        <thead><tr><th>순위</th><th>종목명</th><th class="num">등락률</th><th class="num">하단까지</th></tr></thead>
         <tbody id="body"></tbody>
       </table>
     </div>
@@ -136,6 +140,7 @@ td small{color:var(--sub); font-size:12px; margin-left:6px}
     if (!r.ok) throw new Error(p + ' ' + r.status);
     return r.json();
   };
+  const cap = (v) => { const j = v / 1e12; return (j >= 100 ? nf.format(Math.round(j)) : j.toFixed(1)) + '조'; };
   const pct = (v, d = 1) => (v >= 0 ? '+' : '') + v.toFixed(d) + '%';
 
   let items = [], params = {env_pct: 20, near_pct: 10};
@@ -211,7 +216,7 @@ td small{color:var(--sub); font-size:12px; margin-left:6px}
     $('#body').innerHTML = rows.map((h) => `
       <tr data-code="${esc(h.code)}" class="${h.near ? 'near' : ''}" aria-selected="${selected === h.code}">
         <td>${h.rank}</td>
-        <td><b>${esc(h.name)}</b><small>${esc(h.code)} · ${esc(h.market)}</small>${h.touch ? '<span class="tag">터치</span>' : ''}</td>
+        <td class="nm"><b>${esc(h.name)}</b>${h.touch ? '<span class="tag">터치</span>' : ''}<small>시총 ${cap(h.marcap)} · ${esc(h.code)}</small></td>
         <td class="num ${h.change_pct >= 0 ? 'up' : 'down'}">${pct(h.change_pct, 2)}</td>
         <td class="num">${pct(h.gap_pct, 1)}</td>
       </tr>`).join('');
@@ -222,7 +227,6 @@ td small{color:var(--sub); font-size:12px; margin-left:6px}
       selected = tr.dataset.code;
       $('#body').querySelectorAll('tr').forEach((x) => x.setAttribute('aria-selected', String(x === tr)));
       showChart(rows[i]);
-      window.scrollTo({top: 0, behavior: 'smooth'});
     }));
   }
 
