@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S기법 스캐너</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#edf0f4; --panel:#ffffff; --ink:#18202c; --sub:#667085; --rule:#d8dde5;
+  --up:#e0383e; --down:#2b6cde; --mark:#f08c00; --hover:#f4f6f9; --env:#111111; --near:rgba(240,140,0,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#0d1218; --panel:#141b24; --ink:#e6ebf2; --sub:#8a96a8; --rule:#232d3a;
+    --up:#ff6a70; --down:#6ea2ff; --mark:#ffa62b; --hover:#1a232e; --env:#e6ebf2; --near:rgba(255,166,43,.12);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:15px/1.5 "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+.wrap{max-width:1120px; margin:0 auto; padding:0 16px}
+header{padding:22px 0 14px}
+.brand{display:flex; align-items:baseline; gap:12px; flex-wrap:wrap}
+h1{margin:0; font-size:22px; font-weight:750; letter-spacing:-.02em}
+.rule-line{margin:2px 0 0; color:var(--sub); font-size:13px}
+.nav a{color:var(--sub); font-size:13px; text-decoration:none; border-bottom:1px solid var(--rule)}
+.nav a:hover{color:var(--ink)}
+.stamp{margin-left:auto; color:var(--sub); font-size:13px; text-align:right}
+.stamp b{color:var(--ink); font-weight:650}
+
+.chartbox{background:var(--panel); border:1px solid var(--rule); padding:14px 16px 10px}
+.ch-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.ch-head h2{margin:0; font-size:18px; letter-spacing:-.01em}
+.ch-meta{color:var(--sub); font-size:13px}
+.ch-tools{display:flex; align-items:center; gap:8px; margin-top:8px; flex-wrap:wrap}
+.seg{display:inline-flex; border:1px solid var(--rule); border-radius:4px; overflow:hidden}
+.seg button{padding:5px 12px; border:0; background:transparent; color:var(--sub); font:inherit; font-size:13px; cursor:pointer}
+.seg button + button{border-left:1px solid var(--rule)}
+.seg button[aria-pressed="true"]{background:var(--mark); color:#fff; font-weight:650}
+.seg button:focus-visible{outline:2px solid var(--mark); outline-offset:-2px}
+#chart{height:460px; margin-top:10px}
+.view{margin-top:6px; color:var(--sub); font-size:12.5px}
+.key{display:flex; gap:16px; flex-wrap:wrap; color:var(--sub); font-size:12.5px; margin-top:6px}
+.key i{display:inline-block; width:14px; height:3px; margin-right:6px; vertical-align:middle; background:var(--env)}
+
+.log{margin:18px 0 40px; background:var(--panel); border:1px solid var(--rule)}
+.log-head{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; border-bottom:1px solid var(--rule); flex-wrap:wrap}
+.log h2{margin:0; font-size:14px; font-weight:700}
+.tools{display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.tools label{font-size:13px; color:var(--sub); display:inline-flex; align-items:center; gap:6px; cursor:pointer}
+.tools input[type=search]{
+  width:170px; max-width:100%; padding:7px 10px; border:1px solid var(--rule); border-radius:4px;
+  background:var(--paper); color:var(--ink); font:inherit; font-size:14px;
+}
+.tools input:focus-visible{outline:2px solid var(--mark); outline-offset:1px}
+.scroll{overflow-x:auto}
+table{width:100%; border-collapse:collapse; min-width:520px}
+th, td{padding:10px 16px; text-align:left; border-bottom:1px solid var(--rule); font-size:14px; white-space:nowrap}
+th{color:var(--sub); font-weight:600; font-size:12.5px; background:var(--panel)}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--hover)}
+tbody tr[aria-selected="true"]{box-shadow:inset 3px 0 0 var(--mark); background:var(--hover)}
+tbody tr.near{background:var(--near)}
+td.num, th.num{text-align:right}
+td small{color:var(--sub); font-size:12px; margin-left:6px}
+.up{color:var(--up)} .down{color:var(--down)}
+.tag{display:inline-block; padding:0 7px; margin-left:6px; border-radius:3px; font-size:11.5px; border:1px solid var(--mark); color:var(--mark)}
+.empty{padding:18px 16px; color:var(--sub); font-size:14px; margin:0}
+@media (max-width:860px){
+  #chart{height:340px}
+  .stamp{margin-left:0; text-align:left; width:100%}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">
+      <h1>S기법 스캐너</h1>
+      <div class="stamp" id="stamp">불러오는 중</div>
+    </div>
+    <p class="rule-line" id="rule">시총 2조 이상 · 20일 엔벨로프(±20%) 하단에 닿거나 가까운 종목</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="chartbox" aria-label="차트">
+    <div class="ch-head"><h2 id="chTitle">차트</h2><span class="ch-meta" id="chMeta"></span></div>
+    <div class="ch-tools">
+      <div class="seg" id="seg" role="group" aria-label="표시할 봉 수">
+        <button type="button" data-n="60" aria-pressed="true">60봉</button>
+        <button type="button" data-n="120" aria-pressed="false">120봉</button>
+      </div>
+    </div>
+    <div id="chart" role="img" aria-label="캔들과 엔벨로프 차트"></div>
+    <div class="view" id="view"></div>
+    <div class="key"><span><i></i>엔벨로프 상단·하단 (20일, ±20%)</span></div>
+  </section>
+
+  <section class="log" aria-label="종목 목록">
+    <div class="log-head">
+      <h2 id="listTitle">종목</h2>
+      <div class="tools">
+        <div class="seg" id="sort" role="group" aria-label="정렬">
+          <button type="button" data-s="rank" aria-pressed="true">시총순</button>
+          <button type="button" data-s="gap" aria-pressed="false">하단 근접순</button>
+        </div>
+        <label><input type="checkbox" id="onlyNear"> 10% 이내만</label>
+        <input id="q" type="search" placeholder="종목명 또는 코드" aria-label="종목 검색">
+      </div>
+    </div>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>순위</th><th>종목명</th><th class="num">당일 등락률</th><th class="num">하단까지</th></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <p class="empty" id="empty" hidden></p>
+  </section>
+</main>
+
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+<script>
+(() => {
+  const nf = new Intl.NumberFormat('ko-KR');
+  const $ = (s) => document.querySelector(s);
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const dark = () => matchMedia('(prefers-color-scheme: dark)').matches;
+  const getJSON = async (p) => {
+    const r = await fetch(p + '?t=' + Date.now());
+    if (!r.ok) throw new Error(p + ' ' + r.status);
+    return r.json();
+  };
+  const pct = (v, d = 1) => (v >= 0 ? '+' : '') + v.toFixed(d) + '%';
+
+  let items = [], params = {env_pct: 20, near_pct: 10};
+  let sortBy = 'rank', onlyNear = false, selected = null, span = 60, cur = null;
+  let chart = null, candle = null, upLine = null, loLine = null;
+
+  const palette = () => dark()
+    ? {bg:'#141b24', text:'#8a96a8', grid:'#1f2833', up:'#ff6a70', down:'#6ea2ff', env:'#e6ebf2'}
+    : {bg:'#ffffff', text:'#667085', grid:'#eef0f4', up:'#e0383e', down:'#2b6cde', env:'#111111'};
+
+  function ensureChart() {
+    if (chart) return;
+    const el = $('#chart'), p = palette();
+    chart = LightweightCharts.createChart(el, {
+      width: el.clientWidth, height: el.clientHeight,
+      layout: {background: {type: 'solid', color: p.bg}, textColor: p.text, fontFamily: 'inherit'},
+      grid: {vertLines: {color: p.grid}, horzLines: {color: p.grid}},
+      rightPriceScale: {borderColor: p.grid},
+      timeScale: {borderColor: p.grid, timeVisible: false},
+      crosshair: {mode: 0},
+    });
+    const fmt = {type: 'price', precision: 0, minMove: 1};
+    candle = chart.addCandlestickSeries({
+      upColor: p.up, downColor: p.down, borderUpColor: p.up, borderDownColor: p.down,
+      wickUpColor: p.up, wickDownColor: p.down, priceFormat: fmt,
+    });
+    const line = () => chart.addLineSeries({color: p.env, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, priceFormat: fmt});
+    upLine = line(); loLine = line();
+    new ResizeObserver(() => chart.applyOptions({width: el.clientWidth, height: el.clientHeight})).observe(el);
+    chart.timeScale().subscribeVisibleLogicalRangeChange(onRange);
+  }
+
+  function onRange(r) {
+    const v = $('#view');
+    if (!cur || !r) { v.textContent = ''; return; }
+    const n = cur.t.length;
+    const from = Math.max(0, Math.ceil(r.from)), to = Math.min(n - 1, Math.floor(r.to));
+    v.textContent = to < from ? '' : `화면에 ${to - from + 1}봉 (${cur.t[from]} ~ ${cur.t[to]})`;
+  }
+
+  function applyRange() {
+    if (!chart || !cur) return;
+    const n = cur.t.length;
+    if (span >= n) { chart.timeScale().fitContent(); return; }
+    chart.timeScale().setVisibleLogicalRange({from: n - span - 0.5, to: n - 0.5});
+  }
+
+  async function showChart(it) {
+    ensureChart();
+    $('#chTitle').textContent = `${it.name} ${it.code}`;
+    const touch = it.touch ? ' · 하단 터치' : '';
+    $('#chMeta').textContent = `${it.market} · 시총 ${(it.marcap / 1e12).toFixed(1)}조 · 종가 ${nf.format(it.close)} (${pct(it.change_pct)}) · 하단까지 ${pct(it.gap_pct)}${touch}`;
+    let d;
+    try { d = await getJSON('data/charts/' + it.code + '.json'); }
+    catch (e) { $('#chMeta').textContent = '차트 데이터를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.'; return; }
+    cur = d;
+    candle.setData(d.t.map((t, i) => ({time: t, open: d.o[i], high: d.h[i], low: d.l[i], close: d.c[i]})));
+    const line = (arr) => d.t.map((t, i) => arr[i] == null ? null : {time: t, value: arr[i]}).filter(Boolean);
+    upLine.setData(line(d.up));
+    loLine.setData(line(d.lo));
+    applyRange();
+  }
+
+  function visible() {
+    const q = $('#q').value.trim().toLowerCase();
+    let rows = items.filter((h) => (!q || h.name.toLowerCase().includes(q) || h.code.includes(q)) && (!onlyNear || h.near));
+    if (sortBy === 'gap') rows = rows.slice().sort((a, b) => b.gap_pct - a.gap_pct);   // 하단에 가장 가까운(또는 아래로 이탈한) 종목부터
+    return rows;
+  }
+
+  function renderList() {
+    const rows = visible();
+    $('#body').innerHTML = rows.map((h) => `
+      <tr data-code="${esc(h.code)}" class="${h.near ? 'near' : ''}" aria-selected="${selected === h.code}">
+        <td>${h.rank}</td>
+        <td><b>${esc(h.name)}</b><small>${esc(h.code)} · ${esc(h.market)}</small>${h.touch ? '<span class="tag">터치</span>' : ''}</td>
+        <td class="num ${h.change_pct >= 0 ? 'up' : 'down'}">${pct(h.change_pct, 2)}</td>
+        <td class="num">${pct(h.gap_pct, 1)}</td>
+      </tr>`).join('');
+    const empty = $('#empty');
+    empty.hidden = rows.length > 0;
+    empty.textContent = items.length ? '조건에 맞는 종목이 없어요.' : '아직 데이터가 없어요. GitHub Actions에서 s_scan을 한 번 실행해 주세요.';
+    $('#body').querySelectorAll('tr').forEach((tr, i) => tr.addEventListener('click', () => {
+      selected = tr.dataset.code;
+      $('#body').querySelectorAll('tr').forEach((x) => x.setAttribute('aria-selected', String(x === tr)));
+      showChart(rows[i]);
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    }));
+  }
+
+  function wire() {
+    document.querySelectorAll('#seg button').forEach((b) => b.addEventListener('click', () => {
+      span = +b.dataset.n;
+      document.querySelectorAll('#seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      applyRange();
+    }));
+    document.querySelectorAll('#sort button').forEach((b) => b.addEventListener('click', () => {
+      sortBy = b.dataset.s;
+      document.querySelectorAll('#sort button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      renderList();
+    }));
+    $('#onlyNear').addEventListener('change', (e) => { onlyNear = e.target.checked; renderList(); });
+    $('#q').addEventListener('input', renderList);
+  }
+
+  async function init() {
+    wire();
+    let data = {items: [], asof: null};
+    try { data = await getJSON('data/list.json'); } catch (e) { /* 아래 안내 문구로 처리 */ }
+    items = data.items || [];
+    params = data.params || params;
+    const nearN = items.filter((h) => h.near).length;
+    $('#rule').textContent = `시총 ${((params.min_marcap || 2e12) / 1e12).toFixed(0)}조 이상 · ${params.env_period || 20}일 엔벨로프(±${params.env_pct}%) 하단까지 ${params.near_pct}% 이내면 근접, 저가가 하단 이하면 터치`;
+    $('#onlyNear').parentElement.lastChild.textContent = ` ${params.near_pct}% 이내만`;
+    $('#stamp').innerHTML = data.asof
+      ? `<b>${esc(data.asof)}</b> 장 마감 기준 · ${nf.format(items.length)}종목 · 근접 ${nearN}종목 · 갱신 ${esc((data.updated_at || '').slice(0, 16).replace('T', ' '))}`
+      : '스캔 기록 없음';
+    $('#listTitle').textContent = `종목 (${nf.format(items.length)})`;
+    renderList();
+    if (items.length) {
+      selected = items[0].code;
+      renderList();
+      showChart(items[0]);
+    } else ensureChart();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
