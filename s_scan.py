@@ -198,7 +198,7 @@ def main():
     force = os.environ.get('FORCE') == '1'
     dry = os.environ.get('DRY_RUN') == '1'
     asof = reference_date()
-     if not force:
+    if not force:
         if asof == now.date() and now.hour < 16:
             print('장 마감 후 데이터가 확정되기 전(16시 이전)이라 종료합니다.')
             return 0
